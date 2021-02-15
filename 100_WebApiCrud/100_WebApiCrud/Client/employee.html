@@ -1,0 +1,162 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="../Content/bootstrap.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Employee List</h5>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <button class="btn btn-primary" id="getEmployee">Get Employees</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Title</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeeTable">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" class="form-control" id="title" />
+                        </div>
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <input type="text" class="form-control" id="firstname" />
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" class="form-control" id="lastname" />
+                        </div>
+                        <button class="btn btn-success" id="btnAddEmployee">Add Employee</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <script src="../Scripts/jquery-3.0.0.js"></script>
+    <script>
+        //this first function means when the document is loaded
+        $(function () {
+            
+            //Çalışan listeleme
+            function BringData(employees) {
+                $("#employeeTable").find("tr").remove();
+                $.each(employees, function (index, data) {
+                    $('#employeeTable').append(
+                        `<tr>
+                            <td>${data.EmployeeId}</td>
+                            <td>${data.FirstName}</td>
+                            <td>${data.LastName}</td>
+                            <td>${data.Title}</td>
+                            <td>
+                                <button class="btn btn-xs btn-danger" value="delete" id="${data.EmployeeId}">Delete</button>
+                                <button class="btn btn-xs btn-warning" value="update" id="${data.EmployeeId}">Update</button>
+</td>
+                         <tr>`
+                    )
+                })
+            }
+            //Çalışan silme
+            $("#employeeTable").on('click', 'button', function () {
+                var message = confirm("İşlem yapmak istediğinize emin misiniz?");
+                var currentValue = $(this).attr("value");
+                var currentId = $(this).attr('id');
+                if (currentValue == "delete") {
+                    if (message) {
+                        $.ajax({
+                            type: 'Delete',
+                            url: 'https://localhost:44311/api/employees/' + currentId,
+                            success: function (data) {
+                                BringData(data);
+                            }
+
+                        })
+                    } else {
+                        alert("İşlem İptal Edildi!")
+                    }
+                }
+                //Çalışan güncelleme
+                else {
+                    if (message) {
+                        var employee = {};
+                        employee.EmployeeId = currentId;
+                        employee.FirstName = $("#firstname").val();
+                        employee.Last = $("#lastname").val();
+                        employee.Title = $("title").val();
+
+                        $.ajax({
+                            type: 'Put',
+                            url: 'https://localhost:44311/api/employees/',
+                            data: employee,
+                            dataType:'json',
+                            success: function (data) {
+                                alert('Güncelleme başarılı');
+                            }
+                        })
+                    } else {
+                        alert("İşlem İptal Edildi!")
+                    }
+                }
+            })
+
+            
+
+            //Çalışan ekleme
+            $("#btnAddEmployee").click(function () {
+                $.ajax({
+                    type: 'Post',
+                    url: 'https://localhost:44311/api/employees/',
+                    data: {
+                        FirstName: $("#firstname").val(),
+                        LastName: $("#lastname").val(),
+                        Title: $("#title").val()
+                    },
+                    dataType: 'Json',
+                    success: function (data) {
+                        alert("Veri Eklendi")
+                    }
+                })
+            })
+
+            
+
+
+            //Api bağlantı
+            $("#getEmployee").click(function () {
+                $.ajax({
+                    type: 'Get',
+                    url: 'https://localhost:44311/api/employees',
+                    success: function (data) {
+                        BringData(data);
+                    }
+                })
+            })
+        })
+
+    </script>
+</body>
+</html>
